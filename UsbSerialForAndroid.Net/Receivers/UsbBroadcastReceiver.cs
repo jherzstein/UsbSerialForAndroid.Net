@@ -26,7 +26,7 @@ namespace UsbSerialForAndroid.Net.Receivers
                         {
                             case UsbManager.ActionUsbDeviceAttached:
                                 {
-                                    msg = "设备连接 " + msg;
+                                    msg = AppResources.UsbDeviceAttached + msg;
                                     if (usbManager?.HasPermission(usbDevice) == false)
                                     {
                                         var pendingIntent = PendingIntent.GetBroadcast(context, 0, intent, PendingIntentFlags.Immutable);
@@ -37,7 +37,7 @@ namespace UsbSerialForAndroid.Net.Receivers
                                 }
                             case UsbManager.ActionUsbDeviceDetached:
                                 {
-                                    msg = "设备断开 " + msg;
+                                    msg = AppResources.UsbDeviceDetached + msg;
                                     UsbDeviceDetached?.Invoke(usbDevice);
                                     break;
                                 }
