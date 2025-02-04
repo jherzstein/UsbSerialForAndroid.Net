@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
+using UsbSerialForAndroid.Resources;
 
 namespace AvaloniaDemo.Services
 {
@@ -20,7 +21,7 @@ namespace AvaloniaDemo.Services
         {
             windowNotificationManager?.Show(new Notification()
             {
-                Title = "消息",
+                Title = AppResources.Information,
                 Message = msg,
                 Type = type
             });

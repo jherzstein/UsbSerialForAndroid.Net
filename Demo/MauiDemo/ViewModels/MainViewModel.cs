@@ -6,22 +6,23 @@ using MauiDemo.Models;
 using MauiDemo.Services;
 using System.Collections.ObjectModel;
 using System.Text;
+using UsbSerialForAndroid.Resources;
 
 namespace MauiDemo.ViewModels
 {
     public partial class MainViewModel(IUsbService usbService) : ObservableObject
     {
-        [ObservableProperty] private ObservableCollection<UsbDeviceInfo> usbDeviceInfos = new();
-        [ObservableProperty] private string? receivedText;
-        [ObservableProperty] private bool sendHexIsChecked = true;
-        [ObservableProperty] private bool receivedHexIsChecked = true;
-        [ObservableProperty] private UsbDeviceInfo? selectedDeviceInfo;
+        [ObservableProperty] public partial ObservableCollection<UsbDeviceInfo> UsbDeviceInfos { get; set; } = new();
+        [ObservableProperty] public partial string? ReceivedText { get; set; }
+        [ObservableProperty] public partial bool SendHexIsChecked { get; set; } = true;
+        [ObservableProperty] public partial bool ReceivedHexIsChecked { get; set; } = true;
+        [ObservableProperty] public partial UsbDeviceInfo? SelectedDeviceInfo { get; set; }
         public RelayCommand GetAllCommand => new(() =>
         {
             try
             {
                 UsbDeviceInfos = new(usbService.GetUsbDeviceInfos());
-                ShowMessage($"获取到USB设备数：{UsbDeviceInfos.Count}");
+                ShowMessage(AppResources.DevicesCount + UsbDeviceInfos.Count);
             }
             catch (Exception ex)
             {
@@ -41,12 +42,12 @@ namespace MauiDemo.ViewModels
                     {
 
                         usbService.Open(usbDeviceInfo.DeviceId, baudRate, dataBits, stopBits, (byte)parity);
-                        ShowMessage("连接成功");
+                        ShowMessage(AppResources.ConnectionSuccess);
                     }
                 }
                 else
                 {
-                    ShowMessage("没有选择USB设备");
+                    ShowMessage(AppResources.NoDeviceSelected);
                 }
             }
             catch (Exception ex)
@@ -58,13 +59,14 @@ namespace MauiDemo.ViewModels
         {
             try
             {
-                ArgumentException.ThrowIfNullOrWhiteSpace(text);
+                if (string.IsNullOrWhiteSpace(text))
+                    throw new Exception(AppResources.ContentEmptyException);
 
                 var buffer = SendHexIsChecked
                     ? TextToBytes(text)
                     : Encoding.Default.GetBytes(text);
                 usbService.Send(buffer);
-                ShowMessage("发送成功");
+                ShowMessage(AppResources.SentSucessfully);
             }
             catch (Exception ex)
             {
@@ -78,13 +80,13 @@ namespace MauiDemo.ViewModels
                 var buffer = usbService.Receive();
                 if (buffer is null)
                 {
-                    ShowMessage("没有可读的数据");
+                    ShowMessage(AppResources.NoDataToRead);
                     return;
                 }
                 ReceivedText = ReceivedHexIsChecked
                     ? string.Join(' ', buffer.Select(c => c.ToString("X2")))
                     : Encoding.Default.GetString(buffer);
-                ShowMessage($"接收成功,接收长度：{buffer.Length}");
+                ShowMessage(AppResources.ReceiveSuccess + buffer.Length);
             }
             catch (Exception ex)
             {
@@ -93,14 +95,21 @@ namespace MauiDemo.ViewModels
         });
         public RelayCommand TestConnectCommand => new(() =>
         {
-            bool b = usbService.IsConnection();
-            ShowMessage(b ? "已连接" : "未连接");
+            try
+            {
+                bool b = usbService.IsConnection();
+                ShowMessage(b ? AppResources.Connected : AppResources.Disconnected);
+            }
+            catch (Exception ex)
+            {
+                ShowMessage(ex.Message);
+            }
         });
         private static byte[] TextToBytes(string hexString)
         {
             var text = hexString.ToUpper();
             if (text.Any(c => c < '0' && c > 'F'))
-                throw new Exception("发送内容为16进制");
+                throw new Exception(AppResources.ContentFormatExceptionHex);
 
             text = text.Replace(" ", "");
             if (text.Length % 2 > 0)

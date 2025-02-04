@@ -8,6 +8,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using UsbSerialForAndroid.Resources;
 
 namespace AvaloniaDemo.ViewModels
 {
@@ -20,7 +21,7 @@ namespace AvaloniaDemo.ViewModels
             this.notificationService = notificationService;
             this.usbService = usbService;
         }
-        [ObservableProperty] private ObservableCollection<UsbDeviceInfo> usbDeviceInfos = new();
+        [ObservableProperty] private ObservableCollection<UsbDeviceInfo> usbDeviceInfos = [];
         [ObservableProperty] private string? receivedText;
         [ObservableProperty] private bool sendHexIsChecked = true;
         [ObservableProperty] private bool receivedHexIsChecked = true;
@@ -30,7 +31,7 @@ namespace AvaloniaDemo.ViewModels
             try
             {
                 UsbDeviceInfos = new(usbService.GetUsbDeviceInfos());
-                notificationService.ShowMessage($"USB设备总数：{UsbDeviceInfos.Count}");
+                notificationService.ShowMessage(AppResources.DevicesCount + UsbDeviceInfos.Count);
             }
             catch (Exception ex)
             {
@@ -52,14 +53,14 @@ namespace AvaloniaDemo.ViewModels
                         byte dataBits = Convert.ToByte(item2.Content?.ToString());
                         byte stopBits = Convert.ToByte(item3.Content?.ToString());
                         var parity = item4.Content?.ToString() ?? Parity.None.ToString();
-                        var par = (Parity)Enum.Parse(typeof(Parity), parity);
+                        var par = Enum.Parse<Parity>(parity);
                         usbService?.Open(usbDeviceInfo.DeviceId, baudRate, dataBits, stopBits, (byte)par);
-                        notificationService.ShowMessage("连接成功");
+                        notificationService.ShowMessage(AppResources.ConnectionSuccess);
                     }
                 }
                 else
                 {
-                    throw new Exception("没有选择USB设备");
+                    throw new Exception(AppResources.NoDeviceSelected);
                 }
             }
             catch (Exception ex)
@@ -72,13 +73,13 @@ namespace AvaloniaDemo.ViewModels
             try
             {
                 if (string.IsNullOrWhiteSpace(text))
-                    throw new Exception("发送内容不能为空");
+                    throw new Exception(AppResources.ContentEmptyException);
 
                 var buffer = SendHexIsChecked
                     ? TextToBytes(text)
                     : Encoding.Default.GetBytes(text);
                 usbService.Send(buffer);
-                notificationService.ShowMessage("发送成功");
+                notificationService.ShowMessage(AppResources.SentSucessfully);
             }
             catch (Exception ex)
             {
@@ -92,14 +93,14 @@ namespace AvaloniaDemo.ViewModels
                 var buffer = usbService.Receive();
                 if (buffer is null)
                 {
-                    notificationService.ShowMessage("没有数据可读");
+                    notificationService.ShowMessage(AppResources.NoDataToRead);
                     return;
                 }
 
                 ReceivedText = ReceivedHexIsChecked
                 ? string.Join(' ', buffer.Select(c => c.ToString("X2")))
                 : Encoding.Default.GetString(buffer);
-                notificationService.ShowMessage($"接收成功,接收长度：{buffer.Length}");
+                notificationService.ShowMessage(AppResources.ReceiveSuccess + buffer.Length);
             }
             catch (Exception ex)
             {
@@ -110,7 +111,7 @@ namespace AvaloniaDemo.ViewModels
         {
             var text = hexString.ToUpper();
             if (text.Any(c => c < '0' && c > 'F'))
-                throw new Exception("发送内容为16进制");
+                throw new Exception(AppResources.ContentFormatExceptionHex);
 
             text = text.Replace(" ", "");
             if (text.Length % 2 > 0)
@@ -129,7 +130,7 @@ namespace AvaloniaDemo.ViewModels
             try
             {
                 bool b = usbService.IsConnection();
-                notificationService.ShowMessage(b ? "已连接" : "未连接");
+                notificationService.ShowMessage(b ? AppResources.Connected : AppResources.Disconnected);
             }
             catch (Exception ex)
             {

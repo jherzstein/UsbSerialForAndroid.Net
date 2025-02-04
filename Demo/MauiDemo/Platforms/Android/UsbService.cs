@@ -48,7 +48,7 @@ namespace MauiDemo.Platforms.Android
         public byte[] Receive()
         {
             ArgumentNullException.ThrowIfNull(usbDriver);
-            return usbDriver.Read();
+            return usbDriver?.Read() ?? [];
         }
         public void Send(byte[] buffer)
         {

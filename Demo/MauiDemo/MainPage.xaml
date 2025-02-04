@@ -7,8 +7,8 @@
     xmlns:enums="clr-namespace:MauiDemo.Enums"
     xmlns:model="clr-namespace:MauiDemo.Models"
     xmlns:vm="clr-namespace:MauiDemo.ViewModels"
+    xmlns:rf="clr-namespace:UsbSerialForAndroid.Resources;assembly=UsbSerialForAndroid.Resources"
     x:DataType="vm:MainViewModel">
-
 
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -16,24 +16,23 @@
         </ResourceDictionary>
     </ContentPage.Resources>
 
-
     <ScrollView>
         <VerticalStackLayout Padding="10,0" Spacing="25">
 
             <Grid ColumnDefinitions="auto,*,auto">
-                <Label Text="USB设备ID：" VerticalOptions="Center" />
+                <Label Text="{x:Static rf:AppResources.UsbId}" VerticalOptions="Center" />
                 <Picker
                     x:Name="devicePicker"
                     Grid.Column="1"
                     Margin="5,0"
-                    ItemDisplayBinding="{Binding DeviceId}"
+                    ItemDisplayBinding="{Binding Path=DeviceId, x:DataType = model:UsbDeviceInfo}"
                     ItemsSource="{Binding UsbDeviceInfos}"
                     SelectedItem="{Binding SelectedDeviceInfo}"
                     VerticalOptions="Fill" />
                 <Button
                     Grid.Column="2"
                     Command="{Binding GetAllCommand}"
-                    Text="获取USB设备" />
+                    Text="{x:Static rf:AppResources.GetAllDevices}" />
             </Grid>
 
             <Grid
@@ -42,7 +41,7 @@
                 RowDefinitions="auto,auto">
 
                 <StackLayout Grid.Column="0">
-                    <Label Text="波特率：" />
+                    <Label Text="{x:Static rf:AppResources.BaudRate}" />
                     <Picker x:Name="baudRatePicker">
                         <Picker.ItemsSource>
                             <x:Array Type="{x:Type x:Int32}">
@@ -60,7 +59,7 @@
                 </StackLayout>
 
                 <StackLayout Grid.Column="1">
-                    <Label Text="数据位：" />
+                    <Label Text="{x:Static rf:AppResources.DataBits}" />
                     <Picker x:Name="dataBitsPicker" SelectedIndex="3">
                         <Picker.ItemsSource>
                             <x:Array Type="{x:Type x:Byte}">
@@ -74,7 +73,7 @@
                 </StackLayout>
 
                 <StackLayout Grid.Column="2">
-                    <Label Text="停止位：" />
+                    <Label Text="{x:Static rf:AppResources.StopBits}" />
                     <Picker x:Name="stopBitsPicker" SelectedIndex="0">
                         <Picker.ItemsSource>
                             <x:Array Type="{x:Type x:Byte}">
@@ -86,7 +85,7 @@
                 </StackLayout>
 
                 <StackLayout Grid.Column="3">
-                    <Label Text="校验：" />
+                    <Label Text="{x:Static rf:AppResources.Parity}" />
                     <Picker x:Name="parityPicker" SelectedIndex="0">
                         <Picker.ItemsSource>
                             <x:Array Type="{x:Type enums:Parity}">
@@ -103,14 +102,14 @@
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
                     Command="{Binding ConnectDeviceCommand}"
-                    Text="连接">
+                    Text="{x:Static rf:AppResources.Connect}">
                     <Button.CommandParameter>
                         <MultiBinding Converter="{StaticResource mvc}">
-                            <Binding Path="SelectedItem" Source="{x:Reference devicePicker}" />
-                            <Binding Path="SelectedItem" Source="{x:Reference baudRatePicker}" />
-                            <Binding Path="SelectedItem" Source="{x:Reference dataBitsPicker}" />
-                            <Binding Path="SelectedItem" Source="{x:Reference stopBitsPicker}" />
-                            <Binding Path="SelectedItem" Source="{x:Reference parityPicker}" />
+                            <Binding Source="{x:Reference devicePicker}" Path="SelectedItem"  x:DataType = "Picker"/>   
+                            <Binding Source="{x:Reference baudRatePicker}" Path="SelectedItem"  x:DataType = "Picker "/>
+                            <Binding Source="{x:Reference dataBitsPicker }" Path="SelectedItem"  x:DataType = "Picker"/>
+                            <Binding Source="{x:Reference stopBitsPicker}" Path="SelectedItem"  x:DataType = "Picker"/>
+                            <Binding Source="{x:Reference parityPicker}" Path="SelectedItem"  x:DataType = "Picker"/>
                         </MultiBinding>
                     </Button.CommandParameter>
                 </Button>
@@ -120,7 +119,7 @@
                     Grid.Column="2"
                     Grid.ColumnSpan="2"
                     Command="{Binding TestConnectCommand}"
-                    Text="是否连接" />
+                    Text="{x:Static rf:AppResources.TestConnection}" />
 
             </Grid>
 
@@ -128,8 +127,11 @@
                 <StackLayout Orientation="Horizontal">
                     <Button
                         Command="{Binding SendCommand}"
-                        CommandParameter="{Binding Source={x:Reference sendEditor}, Path=Text}"
-                        Text="发送" />
+                        Text="{x:Static rf:AppResources.SendCommand}">
+                        <Button.CommandParameter>
+                          <Binding Source="{x:Reference sendEditor}" Path="Text" x:DataType="Editor"/>
+                        </Button.CommandParameter>
+                    </Button>
                     <CheckBox IsChecked="{Binding SendHexIsChecked}" />
                     <Label Text="HEX" VerticalTextAlignment="Center" />
                 </StackLayout>
@@ -138,7 +140,7 @@
 
             <StackLayout>
                 <StackLayout Orientation="Horizontal">
-                    <Button Command="{Binding ReceiveCommand}" Text="接收" />
+                    <Button Command="{Binding ReceiveCommand}" Text="{x:Static rf:AppResources.Receive}" />
                     <CheckBox IsChecked="{Binding ReceivedHexIsChecked}" />
                     <Label Text="HEX" VerticalTextAlignment="Center" />
                 </StackLayout>
